@@ -22,7 +22,7 @@ def summarize_url(url: str) -> str:
     except Exception as e:
         return f"Failed to load URL: {e}"
 
-    # 2) Chunk content
+    # 2) Chunk content (helps with long pages)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=2000, chunk_overlap=200, separators=["\n\n", "\n", " ", ""]
     )
@@ -30,9 +30,9 @@ def summarize_url(url: str) -> str:
 
     # 3) Local LLM via Ollama (ensure server is running & model is pulled)
     llm = ChatOllama(
-        model=os.getenv("OLLAMA_MODEL", "llama3"),  # allow override via env
-        temperature=0,
+        model=os.getenv("OLLAMA_MODEL", "llama3"),          # exact tag you pulled
         base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        temperature=0,                                       # deterministic summaries
     )
 
     # 4) Prompt
@@ -45,10 +45,10 @@ def summarize_url(url: str) -> str:
         ("user", "{content}")
     ])
 
-    # 5) Chain
+    # 5) Chain: prompt → llm → parse
     chain = prompt | llm | StrOutputParser()
 
-    # 6) Join chunks (simple approach)
+    # 6) Join chunks (simple approach). For very long pages, consider map–reduce.
     full_text = "\n\n".join([c.page_content for c in chunks]) if chunks else docs[0].page_content
 
     try:
