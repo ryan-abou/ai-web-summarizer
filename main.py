@@ -49,17 +49,31 @@ def summarize_url(url: str) -> str:
     chain = prompt | llm | StrOutputParser()
 
     # 6) Join chunks (simple approach). For very long pages, consider map–reduce.
-    full_text = "\n\n".join([c.page_content for c in chunks]) if chunks else docs[0].page_content
+    full_text = ""
+    for c in chunks:
+        page = c.page_content
+        full_text += page + "\n"
 
-    try:
-        summary = chain.invoke({"content": full_text})
-    except Exception as e:
-        return f"LLM error: {e}"
+   # full_text = "\n\n".join([c.page_content for c in chunks]) ???? if chunks else docs[0].page_content
 
-    return summary
+    print(f"[DEBUG] docs count: {len(docs)}")
+    #if docs:
+    #    print(f"[DEBUG] first doc length: {len(docs[0].page_content)}")
+
+    #print(f"[DEBUG] chunks count: {len(chunks)}")
+    #if chunks:
+    #    print(f"[DEBUG] first chunk length: {len(chunks[0].page_content)}")
+
+    #print(f"[DEBUG] full_text length: {len(full_text)}")
+    #print("[DEBUG] full_text head:\n", full_text[:500])
+
+
+    summary = chain.invoke({"content": full_text})
+
+    print(summary)
 
 if __name__ == "__main__":
     import sys
     url = sys.argv[1] if len(sys.argv) > 1 else "https://example.com"
     print("\n=== SUMMARY ===\n")
-    print(summarize_url(url))
+    summarize_url(url)
