@@ -5,6 +5,20 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_ollama import ChatOllama
 
+model = ChatOllama(model="llama3", temperature=0)
+prompt = ChatPromptTemplate.from_template(
+    "Summarize the webpage:\n"
+    "1) 4–6 sentence summary\n"
+    "2) 5 bullet points\n"
+    "3) One takeaway.\n\n"
+    "Content:\n{content}"
+)
+parser = StrOutputParser()
+
+# Create the chain
+chain = prompt | model | parser
+
+# Loads a webpage, chunk the text for long pages, and generate a structured summary.
 def summarize_url(url: str):
     try:
         docs = WebBaseLoader(url).load()
@@ -13,19 +27,14 @@ def summarize_url(url: str):
     except Exception as e:
         return f"Failed to load URL: {e}"
 
-    # Combine chunks for long pages
-    text = "\n".join(
-        RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
-        .split_documents(docs)[i].page_content
-        for i in range(len(docs))
-    )
+    # Split into chunks
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    chunks = splitter.split_documents(docs)
 
-    llm = ChatOllama(model="llama3", temperature=0)
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "Summarize the webpage:\n1) 4–6 sentence summary\n2) 5 bullet points\n3) One takeaway."),
-        ("user", "{content}")
-    ])
-    chain = prompt | llm | StrOutputParser()
+    # Combine chunks
+    text = "\n".join(chunk.page_content for chunk in chunks)
+
+    # Run the chain 
     return chain.invoke({"content": text})
 
 url = "https://ryan-abou.github.io/racism-in-other-wes-moore/"
