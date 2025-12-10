@@ -1,3 +1,5 @@
+# This code is with very little help from Copilot, I restructured the code myself. I would say that I understand it pretty well. I'm not sure why it isn't working.
+
 import os
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
