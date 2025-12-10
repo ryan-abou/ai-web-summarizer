@@ -1,4 +1,3 @@
-
 import os
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.output_parsers import StrOutputParser
@@ -73,7 +72,6 @@ def summarize_url(url: str) -> str:
     print(summary)
 
 if __name__ == "__main__":
-    import sys
-    url = sys.argv[1] if len(sys.argv) > 1 else "https://example.com"
+    url = "https://ryan-abou.github.io/racism-in-other-wes-moore/"  # <-- Hardcoded URL
     print("\n=== SUMMARY ===\n")
     summarize_url(url)
