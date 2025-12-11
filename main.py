@@ -1,4 +1,3 @@
-# This code is with very little help from Copilot, I restructured the code myself. I would say that I understand it pretty well. I'm not sure why it isn't working.
 
 import os
 from langchain_community.document_loaders import WebBaseLoader
@@ -7,6 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_ollama import ChatOllama
 
+# Initialize model and chain
 model = ChatOllama(model="llama3", temperature=0)
 prompt = ChatPromptTemplate.from_template(
     "Summarize the webpage:\n"
@@ -16,11 +16,8 @@ prompt = ChatPromptTemplate.from_template(
     "Content:\n{content}"
 )
 parser = StrOutputParser()
-
-# Create the chain
 chain = prompt | model | parser
 
-# Loads a webpage, chunk the text for long pages, and generate a structured summary.
 def summarize_url(url: str):
     try:
         docs = WebBaseLoader(url).load()
@@ -33,12 +30,24 @@ def summarize_url(url: str):
     splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = splitter.split_documents(docs)
 
-    # Combine chunks
-    text = "\n".join(chunk.page_content for chunk in chunks)
+    # Combine chunks into one string
+    text = ""
+    for chunk in chunks:
+        if text:
+            text += "\n"
+        text += chunk.page_content
 
-    # Run the chain 
+    # Debug info
+    '''
+    print(f"[DEBUG] text length: {len(text)}")
+    print(f"[DEBUG] chunks count: {len(chunks)}")
+    if chunks:
+        print(f"[DEBUG] first chunk length: {len(chunks[0].page_content)}")
+'''
+
+    # Run the chain
     return chain.invoke({"content": text})
 
+# Call the function
 url = "https://ryan-abou.github.io/racism-in-other-wes-moore/"
-print("\n=== SUMMARY ===\n")
 print(summarize_url(url))
