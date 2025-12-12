@@ -35,12 +35,14 @@ def summarize_url(url: str):
         if text:
             text += "\n"
         text += chunk.page_content
-        
+
     # Debug info
+    '''
     print(f"[DEBUG] text length: {len(text)}")
     print(f"[DEBUG] chunks count: {len(chunks)}")
     if chunks:
         print(f"[DEBUG] first chunk length: {len(chunks[0].page_content)}")
+    '''
     
     # Run the chain
     return chain.invoke({"content": text})
